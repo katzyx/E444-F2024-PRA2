@@ -11,14 +11,10 @@ app.config['SECRET_KEY'] = 'hard to guess string'
 bootstrap = Bootstrap(app)
 moment = Moment(app)
 
-def utoronto_email(form, field):
-    if 'utoronto' not in field.data:
-        raise ValidationError('Please use your UofT email.')
-
 
 class NameForm(FlaskForm):
     name = StringField('What is your name?', validators=[DataRequired()])
-    email = StringField('What is your UofT email', validators=[DataRequired(), Email(), utoronto_email])
+    email = StringField('What is your UofT email', validators=[DataRequired(), Email()])
     submit = SubmitField('Submit')
 
 
@@ -45,8 +41,12 @@ def index():
             flash('Looks like you have changed your email!')
 
         session['name'] = form.name.data
-        session['email'] = form.email.data
-
+        
+        if 'utoronto' in form.email.data:
+            session['email'] = form.email.data
+        else:
+            session['email'] = None
+        
         return redirect(url_for('index'))
     
     return render_template('index.html', form=form, name=session.get('name'), email=session.get('email'))
